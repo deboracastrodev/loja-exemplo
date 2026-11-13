@@ -144,6 +144,16 @@ class ApiDaLoja(unittest.TestCase):
         self.assertEqual((self.estoque("CAN-001"), self.estoque("MOC-001")), (30, 4))
         self.assertFalse(self.chamar("GET", f"/carrinhos/{cid}")[1]["fechado"])
 
+    def test_produto_inativado_depois_de_entrar_no_carrinho_impede_o_checkout(self):
+        cid = self.carrinho_com(("CAN-001", 1), ("CAM-001", 1))
+        con = sqlite3.connect(self.banco)
+        with con:
+            con.execute("UPDATE produtos SET ativo = 0 WHERE sku = 'CAM-001'")
+        con.close()
+        status, erro = self.chamar("POST", f"/carrinhos/{cid}/checkout")
+        self.assertEqual((status, erro["erro"]), (409, "produto_indisponivel"))
+        self.assertEqual(self.estoque("CAN-001"), 30)
+
     def test_preco_do_pedido_e_o_do_checkout(self):
         cid = self.carrinho_com(("CAN-001", 1))
         _, pedido = self.chamar("POST", f"/carrinhos/{cid}/checkout")
