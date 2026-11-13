@@ -1,0 +1,13 @@
+# Stack de desenvolvimento: `docker compose up -d --build` e depois
+# `docker compose exec api python -m loja.migrar`. Sem container_name fixo, para
+# outro projeto Compose (um ambiente efêmero, por exemplo) subir ao lado deste.
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - dados:/dados
+
+volumes:
+  dados:
